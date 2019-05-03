@@ -23,12 +23,13 @@ target
 /docs/example/standalone_webservice/data
 /docs/example/imdb/data
 /docs/example/imdb/dev-storage
-/dev/hraberg.clj
-
 crux-bench/data/**/*
 crux-bench/datomic-data/**/*
 /crux-bench/watdiv_*
-
+/example/standalone_webservice/data/*
+/example/standalone_webservice/.nrepl-port
+/example/standalone_webservice/backup/**/*
+/example/3df/data/**/*
 .projectile
 /crux-uberjar/data
 /crux-dev/.testing-oracle.edn

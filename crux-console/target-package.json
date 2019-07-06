@@ -1,0 +1,39 @@
+{
+  "bin": {
+    "crux": "jdeploy-bundle/jdeploy.js"
+  },
+  "name": "crux",
+  "version": "1.0.3",
+  "description": "Open Time Store",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juxt/crux.git"
+  },
+  "keywords": [
+    "bitemporal",
+    "graph",
+    "document",
+    "database",
+    "datalog"
+  ],
+  "author": "https://juxt.pro",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/juxt/crux/issues"
+  },
+  "homepage": "https://github.com/juxt/crux",
+  "preferGlobal": true,
+  "jdeploy": {
+    "jar": "project.jar"
+  },
+  "dependencies": {
+    "shelljs": "^0.7.5"
+  },
+  "files": [
+    "jdeploy-bundle"
+  ]
+}

@@ -9,6 +9,5 @@
                  [ch.qos.logback/logback-classic "1.2.3"]
                  [org.apache.kafka/kafka-clients "2.1.0"]
 
-                 [clj-3df "0.1.0"]]
-  :global-vars {*warn-on-reflection* true}
-  :main example-standalone-webservice.main)
+                 [com.sixthnormal/clj-3df "0.1.0-alpha"]]
+  :global-vars {*warn-on-reflection* true})

@@ -43,9 +43,7 @@
       (java-io/delete-file file))))
 
 (defn jdbc-test []
-  (.setLevel
-   ^Logger (org.slf4j.LoggerFactory/getLogger (Logger/ROOT_LOGGER_NAME))
-   Level/ALL)
+  (dev/set-log-level! 'crux.jdbc :debug)
   (log/info "Starting JDBC test")
   (let [h2-node ^crux.api.ICruxAPI
         (crux/start-jdbc-node {:dbtype "h2"

@@ -31,6 +31,7 @@
            java.util.Date))
 
 (def db-dir "data/h2-benchmark")
+(def dbname "h2-benchmark-node")
 
 (defn delete-directory-recursive
   "Recursively delete a directory."
@@ -42,24 +43,33 @@
           (delete-directory-recursive file-in-dir)))
       (java-io/delete-file file))))
 
+(defn delete-test-fixtures []
+  (delete-directory-recursive db-dir)
+  (delete-directory-recursive (str dbname ".mv.db")))
+
 (defn jdbc-test []
   (dev/set-log-level! 'crux.jdbc :debug)
   (log/info "Starting JDBC test")
   (let [h2-node ^crux.api.ICruxAPI
         (crux/start-jdbc-node {:dbtype "h2"
-                               :dbname "h2-benchmark-node"
+                               :dbname dbname
                                :db-dir db-dir})]
     (try
       (let [_ (log/info (crux/status h2-node))
-            results [(Date.)
-                     (with-open
-                       [in (-> watdiv-test/watdiv-triples-resource
-                               java-io/resource
-                               java-io/input-stream)]
-                       (rdf/submit-ntriples (:tx-log h2-node) in 1000))
-                     (Date.)]
+            results (with-open
+                      [in (-> watdiv-test/watdiv-triples-resource
+                              java-io/resource
+                              java-io/input-stream)]
+                      (rdf/submit-ntriples (:tx-log h2-node) in 1000))
+            #_[(Date.)
+               (with-open
+                 [in (-> watdiv-test/watdiv-triples-resource
+                         java-io/resource
+                         java-io/input-stream)]
+                 (rdf/submit-ntriples (:tx-log h2-node) in 1000))
+               (Date.)]
             _ (log/info (crux/status h2-node))]
         results)
       (finally
         (.close h2-node)
-        (delete-directory-recursive db-dir)))))
+        (delete-test-fixtures)))))

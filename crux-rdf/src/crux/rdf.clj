@@ -12,7 +12,8 @@
             [clojure.tools.logging :as log]
             [crux.codec :as c]
             [crux.db :as db])
-  (:import java.io.StringReader
+  (:import java.util.Date
+           java.io.StringReader
            java.net.URLDecoder
            javax.xml.datatype.DatatypeConstants
            [org.eclipse.rdf4j.rio RDFHandler]
@@ -201,6 +202,36 @@
                           (apply concat)))))))
        (apply concat)))
 
+(defn submit-ntriples-tx
+  [tx-log coll entities]
+  (let [start-date (Date.)
+        tx-ops (vec (for [entity entities]
+                      [:crux.tx/put entity]))
+        _ (db/submit-tx tx-log tx-ops)
+        end-date (Date.)
+        duration (/ (- (.getTime ^java.util.Date end-date)
+                       (.getTime ^java.util.Date start-date))
+                    1000.0)
+        nb-entities (count entities)
+        nb-facts (reduce + (map count entities))
+        avg-nb-facts-per-entity (/ nb-facts
+                                   nb-entities 1.0)
+        avg-fact-transaction-time (/ duration nb-facts 1.0)]
+    (conj
+     coll
+     {:start-date start-date
+      :end-date end-date
+      :nb-entities nb-entities
+      :nb-facts nb-facts
+      :avg-nb-facts-per-entity avg-nb-facts-per-entity
+      :avg-fact-transaction-time avg-fact-transaction-time})))
+
+#_(defn submit-ntriples-tx
+  [tx-log entities]
+  (let [tx-ops (vec (for [entity entities]
+                      [:crux.tx/put entity]))]
+    (db/submit-tx tx-log tx-ops)))
+
 (def ^:dynamic *ntriples-log-size* 100000)
 
 (defn submit-ntriples [tx-log in tx-size]
@@ -208,9 +239,13 @@
        (statements->maps)
        (map #(use-default-language % *default-language*))
        (partition-all tx-size)
-       (reduce (fn [^long n entities]
+       (reduce (partial submit-ntriples-tx tx-log) '())
+       #_(doall (map (partial submit-ntriples-tx tx-log) %))
+       #_(reduce (fn [^long n entities]
                  (when (zero? (long (mod n *ntriples-log-size*)))
-                   (log/debug "submitted" n))
+                   (log/debug "submitted" n)
+                   (log/debug "size:" (reduce + (map count entities))))
+
                  (let [tx-ops (vec (for [entity entities]
                                      [:crux.tx/put entity]))]
                    (db/submit-tx tx-log tx-ops))

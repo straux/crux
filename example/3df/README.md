@@ -32,3 +32,12 @@ will try to connect to the above server, so it needs to be running.
 There's a comment at the bottom of this namespace, which can be
 evaluated, from `exec!` and downwards. My impression is that this
 doesn't fully work, but there's some output.
+
+## TODO
+
+This is only to bring it more inline with the current version of Crux,
+nothing for the functionality itself yet:
+
+* Use a gateway submit function and don't decorate the system.
+* Remove the hook and take listen to the tx-log instead.
+* Bring up-to-date with master.

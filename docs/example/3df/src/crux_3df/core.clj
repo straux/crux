@@ -38,7 +38,8 @@
               crux-3df (dataflow/start-dataflow-tx-listener
                         crux
                         {:crux.dataflow/url "ws://127.0.0.1:6262"
-                         :crux.dataflow/schema schema})]
+                         :crux.dataflow/schema schema
+                         :crux.dataflow/debug-connection? true})]
 
     (api/submit-tx
      crux
@@ -67,51 +68,55 @@
         :user/name "henrik"
         :user/knows [4]}]])
 
-    (df/exec! (:conn crux-3df)
-              (df/query
-               (:db crux-3df) "patrik-email"
-               '[:find ?email
-                 :where
-                 [?patrik :user/name "Patrik"]
-                 [?patrik :user/email ?email]]))
+    (let [{:keys [conn db]} crux-3df]
 
-    (df/exec! (:conn crux-3df)
-              (df/query
-               (:db crux-3df) "patrik-likes"
-               '[:find ?likes
-                 :where
-                 [?patrik :user/name "Patrik"]
-                 [?patrik :user/likes ?likes]]))
+      (df/exec! conn
+                (df/query
+                 db "patrik-email"
+                 '[:find ?email
+                   :where
+                   [?patrik :user/name "Patrik"]
+                   [?patrik :user/email ?email]]))
 
-    (df/exec! (:conn crux-3df)
-              (df/query
-               (:db crux-3df) "patrik-knows-1"
-               '[:find ?knows
-                 :where
-                 [?patrik :user/name "Patrik"]
-                 [?patrik :user/knows ?knows]]))
+      (df/exec! conn
+                (df/query
+                 db "patrik-likes"
+                 '[:find ?likes
+                   :where
+                   [?patrik :user/name "Patrik"]
+                   [?patrik :user/likes ?likes]]))
 
-    (df/exec! (:conn crux-3df)
-              (df/query
-               (:db crux-3df) "patrik-knows"
-               '[:find ?user-name
-                 :where
-                 [?patrik :user/name "Patrik"]
-                 (trans-knows ?patrik ?knows)
-                 [?knows :user/name ?user-name]]
-               '[[(trans-knows ?user ?knows)
-                  [?user :user/knows ?knows]]
-                 [(trans-knows ?user ?knows)
-                  [?user :user/knows ?knows-between]
-                  (trans-knows ?knows-between ?knows)]]))
+      (df/exec! conn
+                (df/query
+                 db "patrik-knows-1"
+                 '[:find ?knows
+                   :where
+                   [?patrik :user/name "Patrik"]
+                   [?patrik :user/knows ?knows]]))
 
-    (df/listen!
-     (:conn crux-3df)
-     :key
-     (fn [& data] (log/info "DATA: " data)))
+      (df/exec! conn
+                (df/query
+                 db "patrik-knows"
+                 '[:find ?user-name
+                   :where
+                   [?patrik :user/name "Patrik"]
+                   (trans-knows ?patrik ?knows)
+                   [?knows :user/name ?user-name]]
+                 '[[(trans-knows ?user ?knows)
+                    [?user :user/knows ?knows]]
+                   [(trans-knows ?user ?knows)
+                    [?user :user/knows ?knows-between]
+                    (trans-knows ?knows-between ?knows)]]))
 
-    (df/listen-query!
-     (:conn crux-3df)
-     "patrik-knows"
-     (fn [& message]
-       (log/info "QUERY BACK: " message)))))
+      (df/listen!
+       conn
+       :key
+       (fn [& data] (log/info "DATA: " data)))
+
+      (df/listen-query!
+       conn
+       "patrik-knows"
+       (fn [& message]
+         (log/info "QUERY BACK: " message)))
+
+      @(promise))))

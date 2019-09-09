@@ -4,9 +4,11 @@
    [clojure.tools.logging :as log]
    [clj-3df.core :as df]
    [clj-3df.attribute :as attribute]
+   [manifold.stream]
    [crux.api :as api]
    [crux.bootstrap :as b]
    [crux.codec :as c]
+   [crux.io :as cio]
    [crux.memory :as mem]
    [crux.standalone :as standalone])
   (:import java.io.Closeable
@@ -89,56 +91,49 @@
         (log/info "3DF Tx:" new-transaction)
         @(df/exec! conn (df/transact db new-transaction))))))
 
-(defn start-3df-connection [node {:keys [crux.3df/url]}]
-  (df/create-debug-conn! url))
-
-(defn start-3df-db [{:keys [conn-3df] :as node} {:keys [crux.3df/schema]}]
-  (let [db (df/create-db schema)]
-    (df/exec! conn-3df (df/create-db-inputs db))
-    db))
-
-(defn start-3df-tx-listener ^java.io.Closeable [{:keys [conn-3df db-3df] :as node}
-                                                {:keys [crux.3df/poll-interval]
-                                                 :or {poll-interval 100}}]
-  ;; TODO: How should you really wrap an existing, started node?
-  (let [crux (assoc (b/map->CruxNode node) :options {})
-        worker-thread-3df (doto (Thread.
-                                 ^Runnable (fn []
-                                             (try
-                                               (loop [tx-id -1]
-                                                 (let [tx-id (with-open [tx-log-context (api/new-tx-log-context crux)]
-                                                               (reduce
-                                                                (fn [_ {:keys [crux.tx/tx-id] :as tx-log-entry}]
-                                                                  (index-to-3df conn-3df db-3df crux tx-log-entry)
-                                                                  tx-id)
-                                                                tx-id
-                                                                (api/tx-log crux tx-log-context (inc tx-id) true)))]
-                                                   (Thread/sleep poll-interval)
-                                                   (recur (long tx-id))))
-                                               (catch InterruptedException ignore))))
-                            (.setName "crux.3df.worker-thread")
-                            (.start))]
-    (reify Closeable
-      (close [_]
-        (doto worker-thread-3df
-          (.interrupt)
-          (.join))))))
+(defrecord Crux3DFTxListener [conn db crux ^Thread worker-thread]
+  Closeable
+  (close [_]
+    (manifold.stream/close! (:ws conn))
+    (doto worker-thread
+      (.interrupt)
+      (.join))))
 
 (s/def :crux.3df/url string?)
 (s/def :crux.3df/schema map?)
 (s/def :crux.3df/poll-interval nat-int?)
 
-(def conn-3df [start-3df-connection [] (s/keys :req [:crux.3df/url])])
-(def db-3df [start-3df-db [:conn-3df] (s/keys :req [:crux.3df/schema])])
-;; TODO: How should you really wrap an existing, started node? See
-;; above as well.
-(def tx-listener-3df [start-3df-tx-listener
-                      [:conn-3df :db-3df :tx-log :kv-store :object-store :indexer]
-                      (s/keys :opt [:crux.3df/poll-interval])])
+(s/def :crux.3df/tx-listener-options (s/keys :req [:crux.3df/url
+                                                   :crux.3df/schema]
+                                             :opt [:crux.3df/poll-interval]))
 
-(def node-config-3df {:conn-3df conn-3df
-                      :db-3df db-3df
-                      :tx-listener-3df tx-listener-3df})
+(defn start-crux-3df-tx-listener ^java.io.Closeable [crux-node
+                                                     {:keys [crux.3df/url
+                                                             crux.3df/schema
+                                                             crux.3df/poll-interval]
+                                                      :or {poll-interval 100}
+                                                      :as options}]
+  (s/assert :crux.3df/tx-listener-options options)
+  (let [conn (df/create-debug-conn! url)
+        db (df/create-db schema)]
+    (df/exec! conn (df/create-db-inputs db))
+    (let [worker-thread (doto (Thread.
+                               ^Runnable (fn []
+                                           (try
+                                             (loop [tx-id -1]
+                                               (let [tx-id (with-open [tx-log-context (api/new-tx-log-context crux-node)]
+                                                             (reduce
+                                                              (fn [_ {:keys [crux.tx/tx-id] :as tx-log-entry}]
+                                                                (index-to-3df conn db crux-node tx-log-entry)
+                                                                tx-id)
+                                                              tx-id
+                                                              (api/tx-log crux-node tx-log-context (inc tx-id) true)))]
+                                                 (Thread/sleep poll-interval)
+                                                 (recur (long tx-id))))
+                                             (catch InterruptedException ignore))))
+                          (.setName "crux.3df.worker-thread")
+                          (.start))]
+      (->Crux3DFTxListener conn db crux-node worker-thread))))
 
 (comment
   (def schema
@@ -162,18 +157,15 @@
                   (attribute/input-semantics :db.semantics.cardinality/many)
                   (attribute/tx-time))})
 
-  (def index-dir "data/db-dir")
-  (def log-dir "data/eventlog")
+  (def ^Closeable crux (b/start-node standalone/node-config
+                                     {:kv-backend "crux.kv.rocksdb.RocksKv"
+                                      :event-log-dir "data/eventlog"
+                                      :db-dir "data/db-dir"}))
 
-  (def crux-options
-    {:kv-backend "crux.kv.rocksdb.RocksKv"
-     :bootstrap-servers "kafka-cluster-kafka-brokers.crux.svc.cluster.local:9092"
-     :event-log-dir log-dir
-     :db-dir index-dir
-     :crux.3df/url "ws://127.0.0.1:6262"
-     :crux.3df/schema schema})
-
-  (def ^Closeable crux (b/start-node (merge standalone/node-config node-config-3df) crux-options))
+  (def ^Closeable crux-3df (start-crux-3df-tx-listener
+                            crux
+                            {:crux.3df/url "ws://127.0.0.1:6262"
+                             :crux.3df/schema schema}))
 
   (api/submit-tx
    crux
@@ -202,33 +194,33 @@
       :user/name "henrik"
       :user/knows [4]}]])
 
-  (df/exec! (:conn-3df crux)
+  (df/exec! (:conn crux-3df)
             (df/query
-             (:db-3df crux) "patrik-email"
+             (:db crux-3df) "patrik-email"
              '[:find ?email
                :where
                [?patrik :user/name "Patrik"]
                [?patrik :user/email ?email]]))
 
-  (df/exec! (:conn-3df crux)
+  (df/exec! (:conn crux-3df)
             (df/query
-             (:db-3df crux) "patrik-likes"
+             (:db crux-3df) "patrik-likes"
              '[:find ?likes
                :where
                [?patrik :user/name "Patrik"]
                [?patrik :user/likes ?likes]]))
 
-  (df/exec! (:conn-3df crux)
+  (df/exec! (:conn crux-3df)
             (df/query
-             (:db-3df crux) "patrik-knows-1"
+             (:db crux-3df) "patrik-knows-1"
              '[:find ?knows
                :where
                [?patrik :user/name "Patrik"]
                [?patrik :user/knows ?knows]]))
 
-  (df/exec! (:conn-3df crux)
+  (df/exec! (:conn crux-3df)
             (df/query
-             (:db-3df crux) "patrik-knows"
+             (:db crux-3df) "patrik-knows"
              '[:find ?user-name
                :where
                [?patrik :user/name "Patrik"]
@@ -241,14 +233,15 @@
                 (trans-knows ?knows-between ?knows)]]))
 
   (df/listen!
-   (:conn-3df crux)
+   (:conn crux-3df)
    :key
    (fn [& data] (log/info "DATA: " data)))
 
   (df/listen-query!
-   (:conn-3df crux)
+   (:conn crux-3df)
    "patrik-knows"
    (fn [& message]
      (log/info "QUERY BACK: " message)))
 
-  (.close crux))
+  (doseq [c [crux-3df crux]]
+    (cio/try-close c)))

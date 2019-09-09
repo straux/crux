@@ -37,8 +37,7 @@
                      :db-dir "data/db-dir"})
               crux-3df (dataflow/start-dataflow-tx-listener
                         crux
-                        {:crux.dataflow/url "ws://127.0.0.1:6262"
-                         :crux.dataflow/schema schema
+                        {:crux.dataflow/schema schema
                          :crux.dataflow/debug-connection? true
                          :crux.dataflow/embed-server? true})]
 

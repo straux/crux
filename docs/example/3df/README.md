@@ -1,5 +1,7 @@
 # Crux 3DF Spike
 
+*Broken for now. Move to module system in progress.*
+
 This is currently out of date and pokes around with the internals of
 Crux, but is still somewhat working.
 

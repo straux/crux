@@ -8,6 +8,7 @@
               "crux-kafka-embedded"
               "crux-kafka-connect"
               "crux-kafka"
+              "crux-dataflow"
               "crux-uberjar"
               "crux-decorators"
               "crux-test"])

@@ -1,17 +1,7 @@
 # Crux 3DF Spike
 
-Example of the crux-dataflow module.
-
-From another terminal, build and run the declarative-dataflow v0.2.0
-server directly from git:
-
-```
-git clone https://github.com/comnik/declarative-dataflow/tree/v0.2.0
-git checkout v0.2.0
-cd server
-cargo build
-cargo run
-```
+Example of the crux-dataflow module. Uses the embedded
+declarative-dataflow server from crux-dataflow. x86_64 Linux only.
 
 (This example project also contains a Dockerfile and a
 docker-compose.yml, but they are using HEAD and not pinned to a
@@ -25,3 +15,6 @@ lein run
 
 My impression is that this doesn't fully work, but there's some
 output.
+
+Note that the `data` directory is kept between runs and needs to be
+deleted to start fresh.

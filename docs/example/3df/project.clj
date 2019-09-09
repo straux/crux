@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [juxt/crux-core "19.09-1.4.0-alpha"]
                  [juxt/crux-rocksdb "19.09-1.4.0-alpha"]
-                 [ch.qos.logback/logback-classic "1.2.3"]
-                 [com.sixthnormal/clj-3df "0.1.0-alpha"]]
-  :global-vars {*warn-on-reflection* true})
+                 [juxt/crux-dataflow "19.09-1.4.1-alpha-SNAPSHOT"]
+                 [ch.qos.logback/logback-classic "1.2.3"]]
+  :global-vars {*warn-on-reflection* true}
+  :main crux-3df.core)

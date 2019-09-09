@@ -4,10 +4,8 @@
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.10.0"]
-                 [juxt/crux "19.04-1.0.2-alpha-SNAPSHOT"]
-                 [org.rocksdb/rocksdbjni "5.17.2"]
+                 [juxt/crux-core "19.09-1.4.0-alpha"]
+                 [juxt/crux-rocksdb "19.09-1.4.0-alpha"]
                  [ch.qos.logback/logback-classic "1.2.3"]
-                 [org.apache.kafka/kafka-clients "2.1.0"]
-
                  [com.sixthnormal/clj-3df "0.1.0-alpha"]]
   :global-vars {*warn-on-reflection* true})

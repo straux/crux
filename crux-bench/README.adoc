@@ -1,3 +1,5 @@
 = Crux Benchmarking
 
 This project is work-in-progress. Public benchmark results are coming soon.
+
+Because it uses java.lang.ProcessHandle, this project requires Java version 9 or above.

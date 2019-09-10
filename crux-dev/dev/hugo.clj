@@ -30,9 +30,6 @@
            java.io.Closeable
            java.util.Date))
 
-(def db-dir "data/h2-benchmark")
-(def dbname "h2-benchmark-node")
-
 (defn delete-directory-recursive
   "Recursively delete a directory."
   [path]
@@ -43,17 +40,41 @@
           (delete-directory-recursive file-in-dir)))
       (java-io/delete-file file))))
 
-(defn delete-test-fixtures []
+(defn delete-test-fixtures [{:keys [dbname db-dir] :as options}]
   (delete-directory-recursive db-dir)
   (delete-directory-recursive (str dbname ".mv.db")))
+
+(defn average [numbers]
+  (if (empty? numbers)
+    0
+    (/ (reduce + numbers) (count numbers))))
+
+(defn summary [results]
+  (let [start-date ^java.util.Date (:start-date (last results))
+        end-date ^java.util.Date (:end-date (first results))
+        duration-sec (/ (- (.getTime end-date)
+                           (.getTime start-date))
+                        1000.0)
+        nb-facts (apply + (map :nb-facts results))
+        tx-times (map :avg-fact-transaction-time results)]
+    ;; All durations in seconds
+    {:total-duration duration-sec
+     :nb-facts nb-facts
+     :avg-tx-time (/ duration-sec nb-facts)
+     :min-tx-time (apply min tx-times)
+     :max-tx-time (apply max tx-times)}))
+
+(def jdbc-options
+  {:dbtype "h2"
+   :dbname "h2-benchmark-node"
+   :db-dir "data/h2-benchmark"})
 
 (defn jdbc-test []
   (dev/set-log-level! 'crux.jdbc :debug)
   (log/info "Starting JDBC test")
-  (let [h2-node ^crux.api.ICruxAPI
-        (crux/start-jdbc-node {:dbtype "h2"
-                               :dbname dbname
-                               :db-dir db-dir})]
+  (let [{:keys [dbtype dbname db-dir] :as options} jdbc-options
+        h2-node ^crux.api.ICruxAPI
+        (crux/start-jdbc-node options)]
     (try
       (let [_ (log/info (crux/status h2-node))
             results (with-open
@@ -72,4 +93,4 @@
         results)
       (finally
         (.close h2-node)
-        (delete-test-fixtures)))))
+        (delete-test-fixtures options)))))

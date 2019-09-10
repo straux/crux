@@ -94,6 +94,7 @@
                    [?patrik :user/name "Patrik"]
                    [?patrik :user/knows ?knows]]))
 
+      ;; TODO: Does not seem to work.
       (df/exec! conn
                 (df/query
                  db "patrik-knows"

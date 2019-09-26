@@ -35,7 +35,7 @@ Engage JUXT for Deployment Services Support if you need help with the initial pr
 
 = Contributing
 
-include::contributing.adoc[leveloffset=+1]
+include::contributing.adoc[]
 
 == Releases
 

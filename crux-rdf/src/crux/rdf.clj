@@ -216,7 +216,8 @@
         nb-facts (reduce + (map count entities))
         avg-nb-facts-per-entity (/ nb-facts
                                    nb-entities 1.0)
-        avg-fact-transaction-time (/ duration nb-facts 1.0)]
+        avg-fact-ingestion-time (/ duration nb-facts 1.0)]
+    (log/debug "Ingested" nb-entities "entities in" duration "s")
     (conj
      coll
      {:start-date start-date
@@ -224,7 +225,7 @@
       :nb-entities nb-entities
       :nb-facts nb-facts
       :avg-nb-facts-per-entity avg-nb-facts-per-entity
-      :avg-fact-transaction-time avg-fact-transaction-time})))
+      :avg-fact-ingestion-time avg-fact-ingestion-time})))
 
 #_(defn submit-ntriples-tx
   [tx-log entities]

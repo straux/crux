@@ -204,13 +204,13 @@
 
 (defn submit-ntriples-tx
   [tx-log coll entities]
-  (let [start-date (Date.)
+  (let [start-date ^java.util.Date (Date.)
         tx-ops (vec (for [entity entities]
                       [:crux.tx/put entity]))
         _ (db/submit-tx tx-log tx-ops)
-        end-date (Date.)
-        duration (/ (- (.getTime ^java.util.Date end-date)
-                       (.getTime ^java.util.Date start-date))
+        end-date ^java.util.Date (Date.)
+        duration (/ (- (.getTime end-date)
+                       (.getTime start-date))
                     1000.0)
         nb-entities (count entities)
         nb-facts (reduce + (map count entities))

@@ -14,7 +14,8 @@
                  [juxt/crux-http-server "derived-from-git"]
                  [juxt/crux-rdf "derived-from-git"]
                  [juxt/crux-decorators "derived-from-git"]
-                 [juxt/crux-test "derived-from-git"]]
+                 [juxt/crux-test "derived-from-git"]
+                 [metasoarous/oz "1.6.0-alpha5"]]
   :profiles {:dev {:dependencies [;; General:
                                   [org.clojure/tools.namespace "0.2.11"]
                                   ;; Hakan:

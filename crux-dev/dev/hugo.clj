@@ -22,7 +22,8 @@
             [crux.query :as q]
             [crux.jdbc :as jdbc]
             [crux.watdiv-test :as watdiv-test]
-            [crux.hash :as hash])
+            [crux.hash :as hash]
+            [oz.core :as oz])
   (:import [crux.api Crux ICruxAPI]
            [ch.qos.logback.classic Level Logger]
            org.slf4j.LoggerFactory

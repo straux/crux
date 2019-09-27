@@ -56,6 +56,7 @@
 
 
 (def storage-dir "bench-storage")
+(def results-dir "bench-results")
 
 (def ingested-file-locations
   {:watdiv-10M watdiv-test/watdiv-triples-resource
@@ -86,6 +87,7 @@
                                  (crux/start-jdbc-node options))
           :bench/log-level :debug
           :bench/storage :jdbc
+          :bench/back-end :rocksdb
           :bench/storage-ns 'crux.jdbc
           :bench/ingested-file :watdiv-10M}})
 
@@ -224,6 +226,12 @@
     (doseq [c [http-server node embedded-kafka]]
       (crux-io/try-close c)))
 
+(defn results-filepath
+  [options]
+  (str storage-dir
+       "/" (name (:bench/storage options))
+       "-" (name (:bench/back-end options))
+       "-" (name (:bench/ingested-file options))))
 
 (defn ingestion-bench
   ([] (ingestion-bench {:bench/storage :jdbc}))
@@ -251,11 +259,32 @@
                        java-io/input-stream)]
                (log/info (str "Starting ingestion at " (Date.)))
                (log/info (str "using options " options))
-               #_(if nb-entities
-                   (ingest-entities! bench-node in nb-entities)
-                   (ingest-entities! bench-node in))
-               (rdf/submit-ntriples (:tx-log bench-node) in 100000))
+               (let [results (rdf/submit-ntriples (:tx-log bench-node)
+                                                  in 100000)]
+                 (spit (results-filepath options) results)
+                 results))
              (finally
                (delete-test-fixtures options)))
            ;; ))
        ))))
+
+(defn ozify-result
+  [^java.util.Date first-date
+   {:keys [start-date end-date
+           avg-fact-ingestion-time] :as result}]
+  (let [time (/ (- (.getTime ^java.util.Date end-date)
+                   (.getTime first-date))
+                1000.0)]
+    {:time time
+     :item "jdbc"
+     :fact-ingestion-time avg-fact-ingestion-time}))
+
+(defn ozify
+  [results]
+  (let [first-date ^java.util.Date (:start-date (last results))
+        values (map (partial ozify-result first-date) results)]
+    {:data {:values values}
+     :encoding {:x {:field "time"}
+                :y {:field "fact-ingestion-time"}
+                :color {:field "item" :type "nominal"}}
+     :mark "line"}))

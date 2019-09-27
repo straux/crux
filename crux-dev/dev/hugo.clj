@@ -8,7 +8,6 @@
             [clojure.spec.alpha :as s]
             [crux.bootstrap :as b]
             [crux.standalone :as standalone]
-            [crux.byte-utils :as bu]
             [crux.db :as db]
             [crux.api :as crux]
             [crux.index :as idx]

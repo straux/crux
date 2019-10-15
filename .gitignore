@@ -34,4 +34,7 @@ crux-bench/datomic-data/**/*
 /crux-uberjar/data
 /crux-dev/.testing-oracle.edn
 /crux-dev/.testing-mysql.edn
-/crux-dev/data/
+/crux-dev/ata/
+/crux-dataflow/data/
+/crux-dataflow/dev/data/
+

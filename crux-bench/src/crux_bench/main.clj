@@ -203,12 +203,13 @@
 (def ^:private default-block-size (* 16 SizeUnit/KB))
 
 (def crux-options
-  {:kv-backend "crux.kv.rocksdb.RocksKv"
-   :bootstrap-servers "kafka-cluster2-kafka-bootstrap.crux:9092"
-   :event-log-dir log-dir
-   :db-dir index-dir
-   :tx-topic "crux-bench-transaction-log"
-   :doc-topic "crux-bench-docs"
+  {:crux.node/topology :crux.kafka/topology
+   :crux.node/kv-store "crux.kv.rocksdb.RocksKv"
+   :crux.kafka/bootstrap-servers "kafka-cluster2-kafka-bootstrap.crux:9092"
+   :crux.standalone/event-log-dir log-dir
+   :crux.kv/db-dir index-dir
+   :crux.kafka/tx-topic "crux-bench-transaction-log"
+   :crux.kafka/doc-topic "crux-bench-docs"
    :server-port 8080})
 
 (defrecord BenchMarkRunner [status crux-node]
@@ -224,9 +225,7 @@
 
 (defn run-node
   [{:keys [server-port] :as options} with-node-fn]
-  (with-open [crux-node (case (System/getenv "CRUX_MODE")
-                            "CLUSTER_NODE" (api/start-cluster-node options)
-                            (api/start-standalone-node options))
+  (with-open [crux-node (api/start-node options)
 
               benchmark-runner (bench-mark-runner crux-node)
 

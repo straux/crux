@@ -5,12 +5,13 @@
 
 
 (def opts
-  {:kv-backend    "crux.kv.rocksdb.RocksKv"
-   :event-log-dir "data/eventlog-1"
-   :db-dir        "data/db-dir-1"})
+  {:crux.node/topology :crux.standalone/topology
+   :crux.node/kv-store    "crux.kv.rocksdb.RocksKv"
+   :crux.standalone/event-log-dir "data/eventlog-1"
+   :crux.kv/db-dir        "data/db-dir-1"})
 
 (def simple-node
-  (api/start-standalone-node opts))
+  (api/start-node opts))
 
 (def srv
   (http-server/start-http-server simple-node))

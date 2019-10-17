@@ -6,7 +6,6 @@
             [crux.api :as api]
             [crux.fixtures.api :refer [*api*]]
             [crux.fixtures.kafka :as fk]
-            [crux.fixtures.cluster-node :as cn]
             [crux.io :as cio])
   (:import java.math.RoundingMode
            java.time.temporal.ChronoUnit
@@ -42,7 +41,6 @@
                                             location (keyword location)
                                             environment (keyword environment)]]
                                   [:crux.tx/put
-                                   id
                                    {:crux.db/id id
                                     :location/location location
                                     :location/environment environment}]))]
@@ -62,7 +60,6 @@
                                  condition-id (keyword "condition" device-id)
                                  location-device-id (keyword "location" device-id)]]
                        [:crux.tx/put
-                        condition-id
                         {:crux.db/id condition-id
                          :condition/time time
                          :condition/device-id location-device-id
@@ -76,7 +73,7 @@
 (defn with-ts-weather-data [f]
   (if run-ts-weather-tests?
     (let [submit-future (future (submit-ts-weather-data *api*))]
-      (api/sync *api* nil)
+      (api/sync *api* (java.time.Duration/ofMinutes 20))
       (t/is (= 1001000 @submit-future))
       (f))
     (f)))
@@ -84,7 +81,7 @@
 (t/use-fixtures :once
                 fk/with-embedded-kafka-cluster
                 fk/with-kafka-client
-                cn/with-cluster-node
+                fk/with-cluster-node
                 with-ts-weather-data)
 
 ;; NOTE: Does not work with range, takes latest values.

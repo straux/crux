@@ -690,10 +690,11 @@
 (def log-dir "data/eventlog-1")
 
 (def crux-options
-  {:kv-backend "crux.kv.rocksdb.RocksKv"
-   :bootstrap-servers "kafka-cluster-kafka-brokers.crux.svc.cluster.local:9092"
-   :event-log-dir log-dir
-   :db-dir index-dir
+  {:crux.node/topology :crux.kafka/topology
+   :crux.node/kv-store "crux.kv.rocksdb.RocksKv"
+   :crux.kafka/bootstrap-servers "kafka-cluster-kafka-brokers.crux.svc.cluster.local:9092"
+   :crux.standalone/event-log-dir log-dir
+   :crux.kv/db-dir index-dir
    :server-port 8080
 
    :http-port 8081
@@ -704,9 +705,7 @@
    ::backup/sh-restore-script "bin/restore.sh"})
 
 (defn run-node [{:keys [server-port http-port] :as options} with-node-fn]
-  (with-open [crux-node (case (System/getenv "CRUX_MODE")
-                            "CLUSTER_NODE" (api/start-cluster-node options)
-                            (api/start-standalone-node options))
+  (with-open [crux-node (api/start-node options)
               api-server (srv/start-http-server
                            crux-node
                            {:server-port http-port

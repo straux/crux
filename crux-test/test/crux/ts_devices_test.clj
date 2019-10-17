@@ -5,9 +5,8 @@
             [clojure.test :as t]
             [crux.api :as api]
             [crux.fixtures.api :refer [*api*]]
-            [crux.fixtures.cluster-node :as cn]
             [crux.fixtures.kafka :as fk]
-            [crux.fixtures.kv :as fkv :refer [*kv*]]
+            [crux.fixtures.kv-only :as fkv :refer [*kv*]]
             [crux.io :as cio])
   (:import java.time.temporal.ChronoUnit
            java.util.Date))
@@ -84,7 +83,7 @@
 (defn with-ts-devices-data [f]
   (if run-ts-devices-tests?
     (let [submit-future (future (submit-ts-devices-data *api*))]
-      (api/sync *api* nil)
+      (api/sync *api* (java.time.Duration/ofMinutes 20))
       (t/is (= 1001000 @submit-future))
       (f))
     (f)))
@@ -92,7 +91,7 @@
 (t/use-fixtures :once
                 fk/with-embedded-kafka-cluster
                 fk/with-kafka-client
-                cn/with-cluster-node
+                fk/with-cluster-node
                 with-ts-devices-data)
 
 ;; 10 most recent battery temperature readings for charging devices

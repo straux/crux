@@ -139,8 +139,8 @@
       {:type :root-node
        :children
        (for [path-component (set (map first (vals window-name->partition-components)))]
-         {:path path-component
-          })})))
+         {:path path-component})})))
+
 
 (defn run-datalog-aggregation
   [db {:keys [aggregation-spec datalog]}]
@@ -161,7 +161,7 @@
 
   (def crux (crux.api/start-node
              {:crux.node/topology :crux.standalone/topology
-              :crux.node/kv-store "crux.kv.rocksdb.RocksKv"
+              :crux.node/kv-store "crux.kv.rocksdb/kv"
               :crux.kv/db-dir "data/db-dir"
               :crux.standalone/event-log-dir "data/event-log-db"}))
 
@@ -246,8 +246,8 @@
     ([] 0)
     ([i] i)
     ([acc i]
-     (+ acc i)))
+     (+ acc i))))
 
 
 
-  )
+

@@ -33,7 +33,7 @@
 
 (def node
   (api/start-standalone-node
-    {:kv-backend "crux.kv.rocksdb.RocksKv"
+    {:kv-backend "crux.kv.rocksdb/kv"
      :event-log-dir "data/eventlog"
      :db-dir "data/db-dir"}))
 

@@ -26,7 +26,7 @@
       (t/is (= (sort-by first value+buffer)
                (sort-by second mem/buffer-comparator value+buffer)))))
 
-   (t/testing "strings"
+  (t/testing "strings"
     (let [values (shuffle [nil "a" "ad" "c" "delta" "eq" "foo" "" "0" "året" "漢字" "यूनिकोड"])
           value+buffer (for [v values]
                          [v (c/->value-buffer v)])]
@@ -41,7 +41,11 @@
     (t/is (instance? Id (c/new-id #crux/id "http://google.com"))))
 
   (t/testing "can create different types of ids"
-    (t/is (= (c/new-id :foo) #crux/id ":foo"))
+    (t/is (= (c/new-id :foo)
+             #crux/id ":foo"
+             #crux/id :foo
+             (read-string "#crux/id \":foo\"")
+             (read-string "#crux/id :foo")))
     (t/is (= (c/new-id #uuid "37c20bcd-eb5e-4ef7-b5dc-69fed7d87f28")
              #crux/id "37c20bcd-eb5e-4ef7-b5dc-69fed7d87f28"))
     (t/is (= (c/new-id "234988566c9a0a9cf952cec82b143bf9c207ac16")

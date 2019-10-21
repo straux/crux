@@ -12,7 +12,6 @@
                  [juxt/crux-kafka-embedded "derived-from-git"]
                  [juxt/crux-jdbc "derived-from-git"]
                  [juxt/crux-http-server "derived-from-git"]
-                 [juxt/crux-dataflow "derived-from-git"]
                  [juxt/crux-rdf "derived-from-git"]
                  [juxt/crux-decorators "derived-from-git"]
 

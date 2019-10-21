@@ -2,12 +2,8 @@
   "Microbench for cached entities index in a more realistic usage scenario."
   (:require [clojure.test :as t]
             [crux.fixtures :as f]
-            [crux.bench :as bench-tools]
+            [crux-microbench.ticker-data-gen :as data-gen]
             [crux.api :as api]
-            [crux.index :as idx]
-            [crux.lru :as lru]
-            [crux.codec :as c]
-            [crux.db :as db]
             [crux.fixtures :as f]
             [crux.fixtures.api :refer [*api*]]
             [crux.fixtures.kafka :as fk])
@@ -42,10 +38,10 @@
 (def test-times (atom {}))
 
 (defn with-stocks-data [f]
-  (api/submit-tx *api* (f/maps->tx-ops currencies))
+  (api/submit-tx *api* (f/maps->tx-ops data-gen/currencies))
   (println "stocks count" stocks-count)
   (let [ctr (atom 0)
-        stocks (map gen-ticker (range stocks-count))
+        stocks (map data-gen/gen-ticker (range stocks-count))
         partitions-total (/ stocks-count 1000)]
     (reset! -stocks stocks)
     (doseq [stocks-batch (partition-all 1000 stocks)]
@@ -56,15 +52,15 @@
   (f))
 
 (defn upload-stocks-with-history [crux-node]
-  (let [base-stocks (map gen-ticker (range stocks-count))
+  (let [base-stocks (map data-gen/gen-ticker (range stocks-count))
         base-date #inst "2019"
         partitions-total (/ stocks-count 1000)]
     (reset! -stocks base-stocks)
     (doseq [i (range history-days)
             :let [date (Date. ^long (+ (.getTime base-date) (* 1000 60 60 24 i)))
                   ctr (atom 0)
-                  stocks-batch (alter-tickers base-stocks)
-                  t-currencies (map alter-currency currencies)]]
+                  stocks-batch (data-gen/alter-tickers base-stocks)
+                  t-currencies (map data-gen/alter-currency data-gen/currencies)]]
       (doseq [stocks-batch (partition-all 1000 stocks-batch)]
         (swap! ctr inc)
         (println "day " (inc i) "\t" "partition " @ctr "/" partitions-total)

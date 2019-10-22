@@ -23,7 +23,7 @@
 (defmulti tx-op first)
 
 (defmethod tx-op :crux.tx/put [_] (s/cat :op #{:crux.tx/put}
-                                         :doc ::doc
+                                         :doc (s/or ::doc c/valid-id?)
                                          :start-valid-time (s/? date?)
                                          :end-valid-time (s/? date?)))
 

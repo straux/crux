@@ -305,6 +305,10 @@
                                      :crux.tx/fn} op) (cons (c/new-id id))
                         true (cons op)
                         true (vec))))]
+    (try (s/assert :crux.api/tx-ops tx-ops)
+         (catch Exception e
+           (log/error (pr-str tx-ops))
+           (log/error e)))
     (s/assert :crux.api/tx-ops tx-ops)
     tx-ops))
 

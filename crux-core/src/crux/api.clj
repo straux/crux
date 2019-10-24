@@ -15,15 +15,23 @@
 (s/def :crux.db.fn/body (s/cat :fn #{'fn}
                                :args (s/coll-of symbol? :kind vector? :min-count 1)
                                :body (s/* any?)))
-(s/def ::doc (s/and (s/map-of keyword? any?)
-                    (s/keys :req [:crux.db/id] :opt [:crux.db.fn/body :crux.db.fn/args])))
+
+(s/def ::doc
+  (s/and (s/map-of keyword? any?)
+         (s/keys :req [:crux.db/id] :opt [:crux.db.fn/body :crux.db.fn/args])))
+
+#_(s/def ::doc
+    (s/or
+      :crux.db/id
+      (s/and (s/map-of keyword? any?)
+             (s/keys :req [:crux.db/id] :opt [:crux.db.fn/body :crux.db.fn/args]))))
 
 (def ^:private date? (partial instance? Date))
 
 (defmulti tx-op first)
 
 (defmethod tx-op :crux.tx/put [_] (s/cat :op #{:crux.tx/put}
-                                         :doc (s/or ::doc c/valid-id?)
+                                         :doc ::doc
                                          :start-valid-time (s/? date?)
                                          :end-valid-time (s/? date?)))
 

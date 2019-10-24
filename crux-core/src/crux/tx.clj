@@ -307,7 +307,9 @@
                         true (vec))))]
     (try (s/assert :crux.api/tx-ops tx-ops)
          (catch Exception e
-           (log/error (pr-str tx-ops))
+           (def hmm-args [snapshot object-store tx-events])
+           (log/error "TX_EVENTS" (pr-str tx-events))
+           (log/error "TX_OPS" (pr-str tx-ops))
            (log/error e)))
     (s/assert :crux.api/tx-ops tx-ops)
     tx-ops))

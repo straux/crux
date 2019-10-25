@@ -156,7 +156,7 @@
 
 (defn ^:microbench bench-with-data-plane []
   (slurp-test-times!)
-  (doseq [tickers-count (range 1000 2000 1000)
+  (doseq [tickers-count (range 1000 11000 1000)
           history-entries (cons 1 (range 10 20 10))
           :let [q-key [tickers-count history-entries ::q1 true]]]
     (if-not false ;(contains? @test-times [tickers-count history-entries ::q1 true])

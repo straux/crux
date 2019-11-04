@@ -32,7 +32,7 @@
         (dataflow/subscribe-query! fdf/*df-listener*
           {:crux.dataflow/sub-id ::four
            :crux.dataflow/query-name "user-with-eid"
-           :crux.dataflow/results-shape :crux.dataflow.results-shape/map
+           :crux.dataflow/results-shape :crux.dataflow.results-shape/maps
            :crux.dataflow/results-root-symbol '?user
            :crux.dataflow/query
            {:find ['?user '?name '?email]
@@ -48,4 +48,4 @@
       (t/is res)
       (t/is "pat2" (get-in res [:updated-keys :ids/patrik :user/name])))))
 
-(test-basic-query)
+(run-tests 'crux.dataflow-test)

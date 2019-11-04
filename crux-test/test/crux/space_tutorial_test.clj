@@ -118,31 +118,31 @@
                                      [[:crux.tx/put
                                        {:crux.db/id :stock/Pu
                                         :commod :commodity/Pu
-                                        :weight-ton 21 }
+                                        :weight-ton 21}
                                        #inst "2115-02-13T18"] ;; valid-time
 
                                       [:crux.tx/put
                                        {:crux.db/id :stock/Pu
                                         :commod :commodity/Pu
-                                        :weight-ton 23 }
+                                        :weight-ton 23}
                                        #inst "2115-02-14T18"]
 
                                       [:crux.tx/put
                                        {:crux.db/id :stock/Pu
                                         :commod :commodity/Pu
-                                        :weight-ton 22.2 }
+                                        :weight-ton 22.2}
                                        #inst "2115-02-15T18"]
 
                                       [:crux.tx/put
                                        {:crux.db/id :stock/Pu
                                         :commod :commodity/Pu
-                                        :weight-ton 24 }
+                                        :weight-ton 24}
                                        #inst "2115-02-18T18"]
 
                                       [:crux.tx/put
                                        {:crux.db/id :stock/Pu
                                         :commod :commodity/Pu
-                                        :weight-ton 24.9 }
+                                        :weight-ton 24.9}
                                        #inst "2115-02-19T18"]]))
                nil)
 
@@ -151,14 +151,14 @@
                                      [[:crux.tx/put
                                        {:crux.db/id :stock/N
                                         :commod :commodity/N
-                                        :weight-ton 3 }
+                                        :weight-ton 3}
                                        #inst "2115-02-13T18" ;; start valid-time
                                        #inst "2115-02-19T18"] ;; end valid-time
 
                                       [:crux.tx/put
                                        {:crux.db/id :stock/CH4
                                         :commod :commodity/CH4
-                                        :weight-ton 92 }
+                                        :weight-ton 92}
                                        #inst "2115-02-15T18"
                                        #inst "2115-02-19T18"]]))
                nil)
@@ -179,9 +179,9 @@
               :id/employee "22910x2",
               :badges ["SETUP" "PUT"],
               :cargo ["stereo" "gold fish" "slippers" "secret note"]}
-             (crux/entity (crux/db crux) :manifest)))
+             (crux/entity (crux/db crux) :manifest))))
 
-    )
+
 
   (t/deftest mercury-tests
     (def data
@@ -242,22 +242,22 @@
     (t/is (=
            (crux/q (crux/db crux)
                    '{:find [element]
-                     :where [[element :type :element/metal]]} )
+                     :where [[element :type :element/metal]]})
 
            (crux/q (crux/db crux)
                    {:find '[element]
-                    :where '[[element :type :element/metal]]} )
+                    :where '[[element :type :element/metal]]})
 
            (crux/q (crux/db crux)
                    (quote
                     {:find [element]
-                     :where [[element :type :element/metal]]}) )))
+                     :where [[element :type :element/metal]]}))))
 
     (t/is (= #{["Gold"] ["Plutonium"]}
              (crux/q (crux/db crux)
                      '{:find [name]
                        :where [[e :type :element/metal]
-                               [e :common-name name]]} )))
+                               [e :common-name name]]})))
 
     (t/is (= #{["Nitrogen" 1.2506] ["Carbon" 2.267] ["Methane" 0.717] ["Borax" 1.73] ["Gold" 19.3] ["Plutonium" 19.816]}
              (crux/q (crux/db crux)
@@ -282,8 +282,8 @@
              #{["Gold"] ["Plutonium"]}))
 
     (t/is (= (filter-appearance "white solid")
-             #{["Borax" "Sodium tetraborate decahydrate"]}
-             ))
+             #{["Borax" "Sodium tetraborate decahydrate"]}))
+
 
     (crux/sync crux (:crux.tx/tx-time (crux/submit-tx
                                        crux
@@ -573,9 +573,9 @@
     (t/is (crux/history-ascending
            (crux/db crux)
            (crux/new-snapshot (crux/db crux #inst "2116-01-01T09")) ;; <1>
-           :kaarlang/clients))
+           :kaarlang/clients)))
 
-    )
+
 
   (t/deftest Oumuamua-test
     (.close crux)
@@ -658,8 +658,8 @@
                                         #inst "2000-01-01"
                                         #inst "2500-01-01"
                                         false
-                                        false ;; <4>
-                                        ]]))
+                                        false]])) ;; <4>
+
                nil)
     (t/is empty? (full-query crux))
 

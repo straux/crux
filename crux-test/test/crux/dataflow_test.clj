@@ -47,4 +47,9 @@
 
     (let [res (.poll sub 1000 TimeUnit/MILLISECONDS)] ; 1000ms here is poll timeout, not interval
       (t/is res)
+      (t/is "pat" (get-in res [:deleted-keys :ids/patrik :user/name]))
       (t/is "pat2" (get-in res [:updated-keys :ids/patrik :user/name])))))
+
+(comment
+
+  (run-tests 'crux.dataflow-test))

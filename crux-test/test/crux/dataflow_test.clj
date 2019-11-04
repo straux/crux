@@ -44,8 +44,7 @@
         {:crux.db/id :ids/patrik
          :user/name  "pat2"
          :user/email "pat@pat2"}]])
-    (let [res (.poll sub 1000 TimeUnit/MILLISECONDS)]
+
+    (let [res (.poll sub 1000 TimeUnit/MILLISECONDS)] ; 1000ms here is poll timeout, not interval
       (t/is res)
       (t/is "pat2" (get-in res [:updated-keys :ids/patrik :user/name])))))
-
-(run-tests 'crux.dataflow-test)

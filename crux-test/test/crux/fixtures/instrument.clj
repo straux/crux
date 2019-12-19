@@ -12,7 +12,7 @@
 
   crux.index.NAryJoinLayeredVirtualIndex
   (instrument [this f]
-    (let [this (update this :unary-join-indexes (fn [indexes] (doall (map #(instrument % f) indexes))))]
+    (let [this (update this :unary-join-indexes (fn [indexes] (doall (map-indexed #(instrument (assoc %2 :d %1) f) indexes))))]
       (f this)))
 
   crux.index.UnaryJoinVirtualIndex
@@ -38,13 +38,13 @@
     (f this)))
 
 (defn ->instrumented-index [visited f i]
-  (let  [ii (or (get @visited i)
-                (let [ii (f visited i)]
-                  (swap! visited assoc i ii)
-                  ii))]
-    (if (instance? crux.index.BinaryJoinLayeredVirtualIndex i)
-      (assoc ii :name (:name i))
-      ii)))
+  (or (get @visited i)
+      (let [ii (f visited i)
+            ii (if (instance? crux.index.BinaryJoinLayeredVirtualIndex i)
+                 (assoc ii :name (:name i))
+                 ii)]
+        (swap! visited assoc i ii)
+        ii)))
 
 (def original-layered-idx->seq i/layered-idx->seq)
 (defn instrumented-layered-idx->seq [f idx]

@@ -2628,13 +2628,23 @@
 
   (println "Transacted")
 
-  (crux.fixtures.query-plan/with-plan
-   (t/is (= 1000
-            (count (api/q (api/db *api*) '{:find [discount catalog]
-                                           :where [[discount :fare-prefix f]
-                                                   [catalog :fare-prefix f]
-                                                   [discount :reference ref]
-                                                   [catalog :reference ref]]})))))
+  (sorted-map :d :e :a :b :c :b)
+
+ (crux.fixtures.query-plan/with-plan
+    (t/is (= 1000
+             (count (api/q (api/db *api*) '{:find [discount catalog]
+                                            :where [[discount :fare-prefix f]
+                                                    [catalog :fare-prefix f]
+                                                    [discount :reference ref]
+                                                    [catalog :reference ref]]})))))
+
+ #_(crux.fixtures.trace/with-tracing
+    (t/is (= 1000
+             (count (api/q (api/db *api*) '{:find [discount catalog]
+                                            :where [[discount :fare-prefix f]
+                                                    [catalog :fare-prefix f]
+                                                    [discount :reference ref]
+                                                    [catalog :reference ref]]})))))
 
   #_{:find [...]
      :where '[[e1 :e1/foo foo]

@@ -51,7 +51,7 @@
   (str "NAry: " (clojure.string/join " " (map :name (:indexes i)))))
 
 (defmethod index-name 'crux.index.UnaryJoinVirtualIndex [i]
-  (str "Unary: " (clojure.string/join " " (map :name (:indexes i)))))
+  (str "Unary" (:d i) ": "  (clojure.string/join " " (map :name (:indexes i)))))
 
 (defmethod index-name 'crux.index.BinaryJoinLayeredVirtualIndex [i]
   (format "Binary: [%s %s %s]" (-> i meta :clause :e) (-> i meta :clause :a) (-> i meta :clause :v)))

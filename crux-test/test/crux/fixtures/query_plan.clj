@@ -47,7 +47,10 @@
 
   (require '[rhizome.viz :as v])
   (v/view-graph (keys g) g
-                :node->descriptor (fn [n] {:label n})))
+                :node->descriptor (fn [n] {:label n}))
+
+  #_(v/view-tree sequential? seq g
+               :node->descriptor (fn [n] {:label (when (number? n) n)})))
 
 (defn loom-instrumenter [g visited i]
   (swap! g assoc (t/index-name i) (mapv t/index-name (children i)))
@@ -57,6 +60,7 @@
   (let [g (atom {})
         f (partial loom-instrumenter g)]
     (let [x (instr/instrumented-layered-idx->seq f idx)]
+      (clojure.pprint/pprint @g)
       (v/view-graph (keys @g) @g
                     :node->descriptor (fn [n] {:label n}))
       x)))

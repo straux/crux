@@ -11,7 +11,7 @@
 (extend-protocol Children
   crux.index.NAryConstrainingLayeredVirtualIndex
   (children [this]
-    (:n-ary-index this))
+    [(:n-ary-index this)])
 
   crux.index.NAryJoinLayeredVirtualIndex
   (children [this]
@@ -36,22 +36,29 @@
     nil))
 
 (comment
-  (lio/view (g/add-nodes (g/graph) :a :b)))
+  (lio/view (-> (g/graph)
+                (g/add-nodes 1 2 3)
+                (g/add-edges [1 2] [1 3 10])))
+
+  (def g
+    {:a [:b :c]
+     :b [:c]
+     :c [:a]})
+
+  (require '[rhizome.viz :as v])
+  (v/view-graph (keys g) g
+                :node->descriptor (fn [n] {:label n})))
 
 (defn loom-instrumenter [g visited i]
-  (swap! g g/add-nodes (t/index-name i))
-  (swap! g (fn [g] (->> i
-                        children
-                        (map t/index-name)
-                        (map (partial vector (t/index-name i)))
-                        (apply g/add-edges g))))
+  (swap! g assoc (t/index-name i) (mapv t/index-name (children i)))
   i)
 
 (defn instrument-layered-idx->seq [idx]
-  (let [g (atom (g/graph))
+  (let [g (atom {})
         f (partial loom-instrumenter g)]
     (let [x (instr/instrumented-layered-idx->seq f idx)]
-      (lio/view @g)
+      (v/view-graph (keys @g) @g
+                    :node->descriptor (fn [n] {:label n}))
       x)))
 
 (defmacro with-plan [& form]

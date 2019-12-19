@@ -23,6 +23,7 @@
                                   ;; Matrix:
                                   [org.roaringbitmap/RoaringBitmap "0.8.11"]
                                   ;; Instrumentation:
+                                  [rhizome "0.2.9"]
                                   [aysylu/loom "1.0.2"]]
                    :source-paths ["dev"]
                    :repl-options {:init-ns user}}}

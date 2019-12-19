@@ -8,6 +8,7 @@
             [crux.fixtures.api :as apif :refer [*api*]]
             [crux.fixtures.kv :as kvf]
             [crux.fixtures.standalone :as fs]
+            [crux.fixtures.instrument]
             [crux.query :as q]
             [crux.index :as i])
   (:import java.util.UUID))
@@ -2608,8 +2609,8 @@
                       {:crux.db/id :petr :name "Petr" :last-name "Petrov"}])
 
   (t/is (= #{[:ivan] [:petr]} (api/q (api/db *api*) '{:find [e]
-                                                  :where [[e :crux.db/id _]]
-                                                  :timeout 10}))))
+                                                      :where [[e :crux.db/id _]]
+                                                      :timeout 10}))))
 
 (t/deftest test-nil-query-attribute-453
   (f/transact! *api* [{:crux.db/id :id :this :that :these :those}])
@@ -2617,3 +2618,26 @@
           RuntimeException
           #"Spec assertion failed"
           (= #{[:id]} (api/q (api/db *api*) {:find ['e] :where [['_ nil 'e]]})))))
+
+(t/deftest test-some-issue-443
+  (dotimes [n 2]
+    (when (= 0 (mod n 100))
+      (print "."))
+    (f/transact! *api* [{:crux.db/id (keyword (str "ida-" n)) :fare-prefix (str "fp" n) :reference (str "ref" n)}
+                        {:crux.db/id (keyword (str "idb-" n)) :fare-prefix (str "fp" n) :reference (str "ref" n)}]))
+
+  (println "Transacted")
+
+  (crux.fixtures.query-plan/with-plan
+   (t/is (= 1000
+            (count (api/q (api/db *api*) '{:find [discount catalog]
+                                           :where [[discount :fare-prefix f]
+                                                   [catalog :fare-prefix f]
+                                                   [discount :reference ref]
+                                                   [catalog :reference ref]]})))))
+
+  #_{:find [...]
+     :where '[[e1 :e1/foo foo]
+              [e1 :e1/bar bar]
+              [e2 :e2/foo foo]
+              [e2 :e2/bar bar]]})

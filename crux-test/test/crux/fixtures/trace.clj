@@ -4,6 +4,29 @@
             [crux.index :as i]
             [crux.memory :as mem]))
 
+(defprotocol PrintVal
+  (print-val [this]))
+
+(defn- trunc
+  [s n]
+  (subs s 0 (min (count s) n)))
+
+(extend-protocol PrintVal
+  org.agrona.DirectBuffer
+  (print-val [this]
+    (trunc (str (mem/buffer->hex this)) 10))
+
+  clojure.lang.PersistentArrayMap
+  (print-val [this]
+    (format "{%s}"
+            (clojure.string/join ", "
+                                 (map (fn [[k v]]
+                                        (str k " " (print-val v))) this))))
+
+  Object
+  (print-val [this]
+    (trunc (str this) 40)))
+
 (def ansi-colors {:white   "[37m"
                   :red     "[31m"
                   :green   "[32m"
@@ -34,44 +57,21 @@
   (format "Binary: [%s %s %s]" (-> i meta :clause :e) (-> i meta :clause :a) (-> i meta :clause :v)))
 
 (defmethod index-name 'crux.index.DocAttributeValueEntityEntityIndex [i]
-  "AVE-E:")
+  (str "AVE-E: " (print-val (:attr i))))
 
 (defmethod index-name 'crux.index.DocAttributeValueEntityValueIndex [i]
-  "AVE-V:")
+  (str "AVE-V: " (print-val (:attr i))))
 
 (defmethod index-name 'crux.index.DocAttributeEntityValueEntityIndex [i]
-  "AVE-E:")
+  (str "AEV-E: " (print-val (:attr i))))
 
 (defmethod index-name 'crux.index.DocAttributeEntityValueValueIndex [i]
-  "AEV-V:")
-
-(defn- trunc
-  [s n]
-  (subs s 0 (min (count s) n)))
+  (str "AEV-V: " (print-val (:attr i))))
 
 (defn- trace-op [{:keys [level depth color] :as this} op & extra]
   (print (in-ansi color (format "%s%s   %s %s"
                                 ({:seek "s" :next "n"} op) @level (apply str (take (get @depth op) (repeat " ")))
                                 (clojure.string/join " " extra)))))
-
-(defprotocol PrintVal
-  (print-val [this]))
-
-(extend-protocol PrintVal
-  org.agrona.DirectBuffer
-  (print-val [this]
-    (trunc (str (mem/buffer->hex this)) 10))
-
-  clojure.lang.PersistentArrayMap
-  (print-val [this]
-    (format "{%s}"
-            (clojure.string/join ", "
-                                 (map (fn [[k v]]
-                                        (str k " " (print-val v))) this))))
-
-  Object
-  (print-val [this]
-    (trunc (str this) 40)))
 
 (defn- v->str [v]
   (str "[" (clojure.string/join " " (map print-val v)) "]"))

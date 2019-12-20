@@ -39,12 +39,13 @@
 
 (defn ->instrumented-index [visited f i]
   (or (get @visited i)
-      (let [ii (f visited i)
-            ii (if (instance? crux.index.BinaryJoinLayeredVirtualIndex i)
-                 (assoc ii :name (:name i))
-                 ii)]
-        (swap! visited assoc i ii)
-        ii)))
+      (when-let [ii (f visited i)]
+        (let [ii (if (instance? crux.index.BinaryJoinLayeredVirtualIndex i)
+                   (assoc ii :name (:name i))
+                   ii)]
+          (swap! visited assoc i ii)
+          ii))
+      i))
 
 (def original-layered-idx->seq i/layered-idx->seq)
 (defn instrumented-layered-idx->seq [f idx]

@@ -130,7 +130,8 @@
     (first (shuffle (clojure.set/difference (set (keys ansi-colors)) (set (map :color (vals @visited))))))))
 
 (defn trace-instrumenter [depth visited i]
-  (InstrumentedLayeredIndex. i depth (atom 0) (get-color i visited)))
+  (when-not (instance? InstrumentedLayeredIndex i)
+    (InstrumentedLayeredIndex. i depth (atom 0) (get-color i visited))))
 
 (defn instrument-layered-idx->seq [idx]
   (let [f (partial trace-instrumenter (atom {:seek 0 :next 0}))]
